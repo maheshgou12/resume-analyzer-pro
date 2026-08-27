@@ -2,9 +2,6 @@
 from pathlib import Path
 import pdfplumber
 import docx
-import spacy
-
-nlp = spacy.load("en_core_web_sm")
 
 
 def extract_text(file_path: str) -> str:
@@ -12,14 +9,17 @@ def extract_text(file_path: str) -> str:
 
     if path.suffix.lower() == ".pdf":
         text = ""
+
         with pdfplumber.open(path) as pdf:
             for page in pdf.pages:
                 text += page.extract_text() or ""
                 text += "\n"
+
         return text
 
     elif path.suffix.lower() == ".docx":
         document = docx.Document(path)
+
         return "\n".join(
             paragraph.text for paragraph in document.paragraphs
         )
@@ -29,7 +29,6 @@ def extract_text(file_path: str) -> str:
 
 
 def extract_entities(text: str):
-    doc = nlp(text)
 
     entities = {
         "name": None,
@@ -55,19 +54,6 @@ def extract_entities(text: str):
     if phone_match:
         entities["phone"] = phone_match.group(0)
 
-    entities["organizations"] = [
-        ent.text for ent in doc.ents
-        if ent.label_ == "ORG"
-    ]
-
-    persons = [
-        ent.text for ent in doc.ents
-        if ent.label_ == "PERSON"
-    ]
-
-    if persons:
-        entities["name"] = persons[0]
-
     skills = [
         "Python",
         "Java",
@@ -90,13 +76,20 @@ def extract_entities(text: str):
         "NumPy",
         "Scikit-learn",
         "Git",
-        "GitHub"
+        "GitHub",
+        "Docker",
+        "Kubernetes",
+        "AWS",
+        "Azure",
+        "GCP",
+        "MongoDB"
     ]
 
     text_lower = text.lower()
 
     entities["skills"] = [
-        skill for skill in skills
+        skill
+        for skill in skills
         if skill.lower() in text_lower
     ]
 
@@ -104,6 +97,7 @@ def extract_entities(text: str):
 
 
 def check_ats_formatting(file_path: str, text: str):
+
     issues = []
     score = 100
 
@@ -124,13 +118,7 @@ def check_ats_formatting(file_path: str, text: str):
 
     text_lower = text.lower()
 
-    sections = [
-        "experience",
-        "education",
-        "skills"
-    ]
-
-    for section in sections:
+    for section in ["experience", "education", "skills"]:
         if section not in text_lower:
             issues.append(f"Missing section: {section}")
             score -= 10
@@ -139,6 +127,7 @@ def check_ats_formatting(file_path: str, text: str):
         "ats_score": max(score, 0),
         "issues": issues
     }
+
 
 SKILL_KEYWORDS = [
     "Python",

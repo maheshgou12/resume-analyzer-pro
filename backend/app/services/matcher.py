@@ -1,15 +1,28 @@
-﻿from sentence_transformers import SentenceTransformer, util
+﻿import re
+from collections import Counter
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+
+def _tokens(text: str):
+    return re.findall(r"[a-zA-Z0-9+#.]+", text.lower())
 
 
 def compute_match_score(resume_text: str, job_description: str) -> float:
-    emb1 = model.encode(resume_text, convert_to_tensor=True)
-    emb2 = model.encode(job_description, convert_to_tensor=True)
+    resume_tokens = Counter(_tokens(resume_text))
+    job_tokens = Counter(_tokens(job_description))
 
-    score = util.cos_sim(emb1, emb2).item()
+    if not job_tokens:
+        return 0.0
 
-    return round(float(score * 100), 2)
+    matched = sum(
+        min(resume_tokens[word], count)
+        for word, count in job_tokens.items()
+        if word in resume_tokens
+    )
+
+    total = sum(job_tokens.values())
+
+    return round((matched / total) * 100, 2)
+
 
 def find_missing_skills(
     resume_skills: list,
@@ -30,10 +43,8 @@ def find_missing_skills(
         for skill in resume_skills
     }
 
-    missing = [
+    return [
         skill
         for skill in required_skills
         if skill.lower() not in resume_skill_set
     ]
-
-    return missing
