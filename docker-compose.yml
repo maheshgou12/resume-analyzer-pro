@@ -1,0 +1,35 @@
+﻿services:
+
+  postgres:
+    image: postgres:16
+    container_name: resume-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: MaheshPostgres2026
+      POSTGRES_DB: resume_analyzer
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d resume_analyzer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    container_name: resume-analyzer-api
+    environment:
+      DATABASE_URL: postgresql://postgres:MaheshPostgres2026@postgres:5432/resume_analyzer
+      SECRET_KEY: JdeHxGmCInZ3P6HBFvQrljRpDwYptFeUocYO-aH1Aeg
+      GROQ_API_KEY: ${GROQ_API_KEY}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
