@@ -6,7 +6,7 @@ app = FastAPI(title="Resume Analyzer Pro API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173","https://resume-analyzer-pro-beryl.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
