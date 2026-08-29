@@ -47,16 +47,17 @@ Job Description:
 {job_description[:2000]}
 """
 
-    response = client.chat.completions.create(
-        model="openai/gpt-oss-20b",
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        temperature=0.2
-    )
+   response = client.chat.completions.create(
+    model="openai/gpt-oss-20b",
+    messages=[
+        {
+            "role": "user",
+            "content": prompt
+        }
+    ],
+    temperature=0.2,
+    response_format={"type": "json_object"}
+)
 
     content = response.choices[0].message.content.strip()
 
