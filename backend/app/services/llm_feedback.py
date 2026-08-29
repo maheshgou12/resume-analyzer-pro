@@ -4,14 +4,12 @@ import json
 from groq import Groq
 from app.config import settings
 
-
 client = Groq(api_key=settings.GROQ_API_KEY)
 
 _feedback_cache = {}
 
 
 def generate_feedback(resume_text: str, job_description: str = "") -> dict:
-
     cache_input = resume_text + "||" + job_description
 
     cache_key = hashlib.sha256(
@@ -47,23 +45,22 @@ Job Description:
 {job_description[:2000]}
 """
 
-   response = client.chat.completions.create(
-    model="openai/gpt-oss-20b",
-    messages=[
-        {
-            "role": "user",
-            "content": prompt
-        }
-    ],
-    temperature=0.2,
-    response_format={"type": "json_object"}
-)
+    response = client.chat.completions.create(
+        model="openai/gpt-oss-20b",
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        temperature=0.2,
+        response_format={"type": "json_object"}
+    )
 
     content = response.choices[0].message.content.strip()
 
     if content.startswith("```json"):
         content = content[7:]
-
     elif content.startswith("```"):
         content = content[3:]
 
@@ -74,10 +71,8 @@ Job Description:
 
     try:
         result = json.loads(content)
-
     except json.JSONDecodeError:
         print("WARNING: Groq returned invalid JSON")
-
         result = {
             "strengths": [],
             "weaknesses": [],
