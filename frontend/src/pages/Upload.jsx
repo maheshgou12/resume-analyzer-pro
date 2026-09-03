@@ -32,7 +32,7 @@ export default function Upload() {
     } catch (err) {
       alert(
         "Analysis failed: " +
-        (err.response?.data?.detail || err.message)
+          (err.response?.data?.detail || err.message)
       );
     }
 
@@ -40,94 +40,192 @@ export default function Upload() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">
-        Analyze Your Resume
-      </h1>
+    <div className="max-w-6xl mx-auto px-6 py-12">
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="file"
-          accept=".pdf,.docx"
-          onChange={(e) => setFile(e.target.files[0])}
-          required
-        />
+      {/* HERO */}
+      <div className="text-center mb-10">
+        <div className="inline-block bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+          AI-Powered Resume Analysis
+        </div>
 
-        <textarea
-          className="w-full border rounded p-2"
-          placeholder="Paste job description (optional, for match scoring)"
-          rows={6}
-          value={jd}
-          onChange={(e) => setJd(e.target.value)}
-        />
+        <h1 className="text-5xl font-bold text-gray-900 mb-4">
+          Analyze Your Resume
+        </h1>
 
-        <button
-          disabled={loading}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          {loading ? "Analyzing..." : "Analyze"}
-        </button>
-      </form>
+        <p className="text-gray-500 text-lg max-w-2xl mx-auto">
+          Upload your resume and compare it with a job description.
+          Get ATS scoring, skill gaps and AI-powered recommendations.
+        </p>
+      </div>
 
+      {/* ANALYZER CARD */}
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 max-w-4xl mx-auto">
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+
+          {/* FILE UPLOAD */}
+          <div>
+            <label className="block font-semibold mb-2">
+              Resume
+            </label>
+
+            <label className="border-2 border-dashed border-gray-300 rounded-xl p-10 flex flex-col items-center justify-center hover:border-blue-500 transition cursor-pointer bg-gray-50">
+
+              <div className="text-5xl mb-3">📄</div>
+
+              <div className="font-semibold text-gray-700">
+                {file ? file.name : "Choose your resume"}
+              </div>
+
+              <div className="text-sm text-gray-400 mt-2">
+                PDF or DOCX
+              </div>
+
+              <input
+                type="file"
+                accept=".pdf,.docx"
+                className="hidden"
+                onChange={(e) => setFile(e.target.files[0])}
+              />
+            </label>
+          </div>
+
+          {/* JOB DESCRIPTION */}
+          <div>
+            <label className="block font-semibold mb-2">
+              Job Description
+            </label>
+
+            <textarea
+              className="w-full border border-gray-300 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              placeholder="Paste the job description here..."
+              rows={8}
+              value={jd}
+              onChange={(e) => setJd(e.target.value)}
+            />
+          </div>
+
+          {/* BUTTON */}
+          <button
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition"
+          >
+            {loading ? "Analyzing Resume..." : "🚀 Analyze Resume"}
+          </button>
+
+        </form>
+      </div>
+
+      {/* RESULTS */}
       {result && (
-        <div className="mt-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="max-w-5xl mx-auto mt-10">
+
+          <h2 className="text-3xl font-bold mb-6">
+            Analysis Results
+          </h2>
+
+          {/* SCORE CARDS */}
+          <div className="grid md:grid-cols-2 gap-6">
+
             <ScoreCard
               label="Match Score"
               value={result.match_score}
+              icon="🎯"
             />
 
             <ScoreCard
               label="ATS Score"
               value={result.ats_score}
+              icon="🤖"
             />
+
           </div>
 
-          <div>
-            <h3 className="font-semibold">
+          {/* MISSING SKILLS */}
+          <div className="bg-white rounded-2xl shadow border p-6 mt-6">
+
+            <h3 className="text-xl font-bold mb-4">
               Missing Skills
             </h3>
 
-            <p>
-              {result.missing_skills?.join(", ") ||
-                "None detected"}
-            </p>
+            <div className="flex flex-wrap gap-3">
+
+              {result.missing_skills?.length > 0 ? (
+                result.missing_skills.map((skill, index) => (
+                  <span
+                    key={index}
+                    className="bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-medium"
+                  >
+                    {skill}
+                  </span>
+                ))
+              ) : (
+                <span className="text-green-600 font-semibold">
+                  ✓ No missing skills detected
+                </span>
+              )}
+
+            </div>
           </div>
 
-          <div>
-            <h3 className="font-semibold">
-              AI Feedback
+          {/* AI FEEDBACK */}
+          <div className="bg-white rounded-2xl shadow border p-6 mt-6">
+
+            <h3 className="text-xl font-bold mb-4">
+              🧠 AI Feedback
             </h3>
 
-            <p className="text-sm text-gray-700">
-              {result.llm_feedback?.overall_summary ||
-                "AI feedback generated."}
-            </p>
+            <div className="space-y-3">
 
-            <ul className="list-disc pl-5 mt-2">
-              {result.llm_feedback?.suggestions?.map(
-                (s, i) => (
-                  <li key={i}>{s}</li>
-                )
+              {result.llm_feedback?.strengths?.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-green-600">
+                    Strengths
+                  </h4>
+
+                  <ul className="list-disc pl-6">
+                    {result.llm_feedback.strengths.map((s, i) => (
+                      <li key={i}>{s}</li>
+                    ))}
+                  </ul>
+                </div>
               )}
-            </ul>
+
+              {result.llm_feedback?.suggestions?.map((s, i) => (
+                <div
+                  key={i}
+                  className="bg-blue-50 p-4 rounded-lg"
+                >
+                  💡 {s}
+                </div>
+              ))}
+
+            </div>
           </div>
+
         </div>
       )}
+
     </div>
   );
 }
 
-function ScoreCard({ label, value }) {
+function ScoreCard({ label, value, icon }) {
   return (
-    <div className="border rounded p-4 text-center">
-      <div className="text-3xl font-bold">
+    <div className="bg-white rounded-2xl shadow border p-8 text-center">
+
+      <div className="text-4xl mb-3">
+        {icon}
+      </div>
+
+      <div className="text-5xl font-bold text-blue-600">
         {value}%
       </div>
 
-      <div className="text-sm text-gray-500">
+      <div className="text-gray-500 mt-2">
         {label}
       </div>
+
     </div>
   );
 }
